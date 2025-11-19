@@ -1,4 +1,4 @@
-package com.app.rdv.security;
+package com.app.rdv.security.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,12 +16,6 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-
-    private final HttpSecurity httpSecurity;
-
-    public SecurityConfig(HttpSecurity httpSecurity) {
-        this.httpSecurity = httpSecurity;
-    }
 
     @Bean
     public InMemoryUserDetailsManager inMemoryUserDetailsManager(PasswordEncoder passwordEncoder) {
@@ -43,14 +37,24 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        return http
+                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .csrf(csrf -> csrf.disable())
+                .authorizeHttpRequests(auth -> auth
+                        // ✅ make add_user endpoint public
+                        .requestMatchers("/api/auth/add_user").permitAll()
 
-    public SecurityFilterChain securityFilterChain(SecurityFilterChain securityFilterChain) throws Exception {
-        return httpSecurity
-                .sessionManagement(sm->sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .csrf(csrf->csrf.disable())
-                .authorizeHttpRequests(auth->auth.requestMatchers("/api/rdv/create","/api/medecin/create","/api/patient/add").hasAnyAuthority("Admin")
-                        .requestMatchers("/api/medecin/all").permitAll())
-                .authorizeHttpRequests(ar->ar.anyRequest().authenticated())
+                        // restricted endpoints
+                        .requestMatchers("/api/rdv/create", "/api/medecin/create", "/api/patient/add").hasAnyAuthority("ADMIN")
+
+                        // open endpoint
+                        .requestMatchers("/api/medecin/all").permitAll()
+
+                        // everything else must be authenticated
+                        .anyRequest().permitAll()
+                )
                 .httpBasic(Customizer.withDefaults())
                 .build();
     }
