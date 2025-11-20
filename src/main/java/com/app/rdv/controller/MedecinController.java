@@ -35,7 +35,7 @@ public class MedecinController {
     // ✅ Update medecin
     @PutMapping("/update/{id}")
     public Medecin updateMedecin(@PathVariable int id, @RequestBody Medecin medecin) {
-        medecin.setId(id);
+
         return serviceMedecin.updateMedecin(medecin);
     }
 
