@@ -3,6 +3,7 @@ package com.app.rdv.controller;
 import com.app.rdv.Entities.Patient;
 import com.app.rdv.service.IServicePatinet;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,7 +16,9 @@ public class PatientController {
     private IServicePatinet servicePatient;
 
     // Create Patient
+
     @PostMapping("/add")
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
     public Patient addPatient(@RequestBody Patient patient) {
         return servicePatient.crationPatient(patient);
     }
